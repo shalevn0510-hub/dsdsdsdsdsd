@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ניהול מטלות משפחתיות</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; text-align: center; }
+        .card { background: white; max-width: 400px; margin: 20px auto; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        button { background: #4CAF50; color: white; border: none; padding: 15px 25px; font-size: 18px; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 10px; }
+        button:active { background: #45a049; }
+        .parent-btn { background: #2196F3; }
+        select, input { width: 100%; padding: 10px; margin: 10px 0; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; }
+        .hidden { display: none; }
+        .task-box { font-size: 20px; margin: 20px 0; color: #333; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="card" id="login-screen">
+        <h2>בחר משתמש</h2>
+        <select id="user-select">
+            <option value="שליו">שליו</option>
+            <option value="תומר">תומר</option>
+            <option value="יובל">יובל</option>
+        </select>
+        <button onclick="login()">כניסה לאפליקציה</button>
+        <button class="parent-btn" onclick="openParentView()">מצב הורים 🔒</button>
+    </div>
+
+    <div class="card hidden" id="app-screen">
+        <h2 id="greeting">שלום</h2>
+        <p>הנקודות שלי: <span id="points-display">0</span> 🌟</p>
+        
+        <div class="task-box" id="task-display">לחץ על הכפתור כדי להגריל משימה להיום!</div>
+        
+        <button onclick="drawTask()">🎲 הגרל משימה</button>
+        <button onclick="completeTask()" style="background: #ff9800;" id="complete-btn" disabled>✅ ביצעתי את המשימה!</button>
+        <button onclick="logout()" style="background: #f44336; margin-top: 20px;">התנתק</button>
+    </div>
+
+    <div class="card hidden" id="parent-screen">
+        <h2>מצב הורים - מעקב משפחתי 📊</h2>
+        <div id="scoreboard" style="text-align: right; margin: 20px 0; font-size: 18px;"></div>
+        <button onclick="logout()">חזרה למסך ראשי</button>
+    </div>
+
+    <script>
+        const tasks = [
+            "לשטוף כלים 🍽️",
+            "להוריד זבל 🗑️",
+            "לסדר את הסלון 🛋️",
+            "לפנות מדיח 🧽",
+            "לקפל כביסה 👕"
+        ];
+
+        let currentUser = "";
+        let currentTask = "";
+        
+        // טעינת נקודות מזיכרון מקומי
+        let scores = JSON.parse(localStorage.getItem('family_scores')) || { "שליו": 0, "תומר": 0, "יובל": 0 };
+
+        function login() {
+            currentUser = document.getElementById('user-select').value;
+            document.getElementById('greeting').innerText = `היי, ${currentUser}!`;
+            updatePointsDisplay();
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('app-screen').classList.remove('hidden');
+        }
+
+        function openParentView() {
+            let html = "";
+            for (let user in scores) {
+                html += `<p><b>${user}:</b> ${scores[user]} נקודות 🌟</p>`;
+            }
+            document.getElementById('scoreboard').innerHTML = html;
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('parent-screen').classList.remove('hidden');
+        }
+
+        function drawTask() {
+            const randomTask = tasks[Math.floor(Math.random() * tasks.length)];
+            currentTask = randomTask;
+            document.getElementById('task-display').innerText = currentTask;
+            document.getElementById('complete-btn').removeAttribute('disabled');
+        }
+
+        function completeTask() {
+            scores[currentUser] += 10; // מקבלים 10 נקודות על כל משימה
+            localStorage.setItem('family_scores', JSON.stringify(scores));
+            updatePointsDisplay();
+            alert(`כל הכבוד ${currentUser}! קיבלת 10 נקודות 🎉`);
+            document.getElementById('task-display').innerText = "כל המשימות להפעם בוצעו! אפשר להגריל חדשה.";
+            document.getElementById('complete-btn').setAttribute('disabled', 'true');
+        }
+
+        function updatePointsDisplay() {
+            document.getElementById('points-display').innerText = scores[currentUser];
+        }
+
+        function logout() {
+            document.getElementById('app-screen').classList.add('hidden');
+            document.getElementById('parent-screen').classList.add('hidden');
+            document.getElementById('login-screen').classList.remove('hidden');
+            currentTask = "";
+            document.getElementById('task-display').innerText = "לחץ על הכפתור כדי להגריל משימה להיום!";
+            document.getElementById('complete-btn').setAttribute('disabled', 'true');
+        }
+    </script>
+</body>
+</html>
